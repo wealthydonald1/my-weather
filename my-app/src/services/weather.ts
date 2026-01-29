@@ -21,13 +21,15 @@ export async function fetchWeather(opts: {
 
   const data = await res.json();
 
-  const daily: WeatherData["daily"] = (data.daily?.time ?? []).slice(0, 7).map((date: string, i: number) => ({
-    date,
-    tempMax: data.daily.temperature_2m_max[i],
-    tempMin: data.daily.temperature_2m_min[i],
-    windMax: data.daily.wind_speed_10m_max[i],
-    weatherCode: data.daily.weather_code[i],
-  }));
+  const daily: WeatherData["daily"] = (data.daily?.time ?? [])
+    .slice(0, 7)
+    .map((date: string, i: number) => ({
+      date,
+      tempMax: data.daily.temperature_2m_max[i],
+      tempMin: data.daily.temperature_2m_min[i],
+      windMax: data.daily.wind_speed_10m_max[i],
+      weatherCode: data.daily.weather_code[i],
+    }));
 
   return {
     cityLabel: country ? `${cityName}, ${country}` : cityName,
