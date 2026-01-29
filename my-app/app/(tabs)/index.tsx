@@ -8,13 +8,19 @@ import {
   useColorScheme,
 } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { SearchBar } from "../../src/components/SearchBar";
 import { TodayCard } from "../../src/components/TodayCard";
 import { WeekForecastList } from "../../src/components/WeekForecastList";
+import { RecentCities } from "../../src/components/RecentCities";
 
 import { geocodeCity } from "../../src/services/geocode";
 import { fetchWeather } from "../../src/services/weather";
 import type { WeatherData } from "../../src/types/weather";
+
+const RECENT_KEY = "recent_cities";
+const MAX_RECENT = 5;
 
 export default function WeatherScreen() {
   const scheme = useColorScheme();
@@ -27,6 +33,18 @@ export default function WeatherScreen() {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [recent, setRecent] = useState<string[]>([]);
+
+  async function loadRecent() {
+    const raw = await AsyncStorage.getItem(RECENT_KEY);
+    if (raw) setRecent(JSON.parse(raw));
+  }
+
+  async function saveRecent(city: string) {
+    const next = [city, ...recent.filter((c) => c !== city)].slice(0, MAX_RECENT);
+    setRecent(next);
+    await AsyncStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  }
 
   async function loadCity(city: string) {
     const trimmed = city.trim();
@@ -45,6 +63,7 @@ export default function WeatherScreen() {
         timezone: g.timezone,
       });
       setData(w);
+      saveRecent(w.cityLabel);
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
       setData(null);
@@ -54,6 +73,7 @@ export default function WeatherScreen() {
   }
 
   useEffect(() => {
+    loadRecent();
     loadCity("Lagos");
   }, []);
 
@@ -68,6 +88,17 @@ export default function WeatherScreen() {
         disabled={loading}
         theme={isDark ? "dark" : "light"}
       />
+
+      {recent.length > 0 && (
+        <RecentCities
+          cities={recent}
+          onSelect={(city) => {
+            setQuery(city);
+            loadCity(city);
+          }}
+          theme={isDark ? "dark" : "light"}
+        />
+      )}
 
       {loading && (
         <View style={styles.center}>
