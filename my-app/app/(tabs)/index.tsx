@@ -78,7 +78,10 @@ export default function WeatherScreen() {
   }, []);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: bg }} contentContainerStyle={styles.page}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: bg }}
+      contentContainerStyle={styles.page}
+    >
       <Text style={[styles.h1, { color: text }]}>Weather</Text>
 
       <SearchBar
