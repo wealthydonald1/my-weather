@@ -109,11 +109,23 @@ export default function WeatherScreen() {
         )}
 
         {loading && (
-          <View style={styles.center}>
-            <ActivityIndicator />
-            <Text style={{ marginTop: 8, color: text }}>Loading forecast…</Text>
-          </View>
-        )}
+  <View style={styles.loadingWrap}>
+    <View
+      style={[
+        styles.loadingCard,
+        { backgroundColor: isDark ? "#111" : "#ffffff", borderColor: isDark ? "#222" : "#eee" },
+      ]}
+    >
+      <ActivityIndicator />
+      <Text style={{ marginTop: 10, color: text, fontWeight: "800" }}>
+        Loading forecast…
+      </Text>
+      <Text style={{ marginTop: 4, color: isDark ? "#bdbdbd" : "#555" }}>
+        Fetching latest weather for {query.trim() || "your city"}
+      </Text>
+    </View>
+  </View>
+)}
 
         {err && <Text style={[styles.error, { color: "#ff5a5f" }]}>⚠️ {err}</Text>}
 
@@ -133,4 +145,17 @@ const styles = StyleSheet.create({
   h1: { fontSize: 28, fontWeight: "900" },
   center: { paddingVertical: 20, alignItems: "center" },
   error: { fontWeight: "700" },
+  loadingWrap: { paddingTop: 10 },
+loadingCard: {
+  borderWidth: 1,
+  borderRadius: 22,
+  padding: 18,
+  alignItems: "center",
+  gap: 2,
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+},
 });
