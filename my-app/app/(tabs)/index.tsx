@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { SearchBar } from "../../src/components/SearchBar";
 import { TodayCard } from "../../src/components/TodayCard";
@@ -19,6 +20,8 @@ import { geocodeCity } from "../../src/services/geocode";
 import { fetchWeather } from "../../src/services/weather";
 import type { WeatherData } from "../../src/types/weather";
 
+import { getWeatherGradient } from "../../src/utils/themeGradient";
+
 const RECENT_KEY = "recent_cities";
 const MAX_RECENT = 5;
 
@@ -26,7 +29,6 @@ export default function WeatherScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
 
-  const bg = isDark ? "#000" : "#fafafa";
   const text = isDark ? "#fff" : "#111";
 
   const [query, setQuery] = useState("Lagos");
@@ -75,50 +77,54 @@ export default function WeatherScreen() {
   useEffect(() => {
     loadRecent();
     loadCity("Lagos");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ Weather-reactive gradient
+  const weatherCode = data?.current.weatherCode ?? 0;
+  const gradient = getWeatherGradient(weatherCode, isDark ? "dark" : "light");
+
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: bg }}
-      contentContainerStyle={styles.page}
-    >
-      <Text style={[styles.h1, { color: text }]}>Weather</Text>
+    <LinearGradient colors={gradient} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.page}>
+        <Text style={[styles.h1, { color: text }]}>Weather</Text>
 
-      <SearchBar
-        value={query}
-        onChange={setQuery}
-        onSubmit={() => loadCity(query)}
-        disabled={loading}
-        theme={isDark ? "dark" : "light"}
-      />
-
-      {recent.length > 0 && (
-        <RecentCities
-          cities={recent}
-          onSelect={(city) => {
-            setQuery(city);
-            loadCity(city);
-          }}
+        <SearchBar
+          value={query}
+          onChange={setQuery}
+          onSubmit={() => loadCity(query)}
+          disabled={loading}
           theme={isDark ? "dark" : "light"}
         />
-      )}
 
-      {loading && (
-        <View style={styles.center}>
-          <ActivityIndicator />
-          <Text style={{ marginTop: 8, color: text }}>Loading forecast…</Text>
-        </View>
-      )}
+        {recent.length > 0 && (
+          <RecentCities
+            cities={recent}
+            onSelect={(city) => {
+              setQuery(city);
+              loadCity(city);
+            }}
+            theme={isDark ? "dark" : "light"}
+          />
+        )}
 
-      {err && <Text style={[styles.error, { color: "#ff5a5f" }]}>⚠️ {err}</Text>}
+        {loading && (
+          <View style={styles.center}>
+            <ActivityIndicator />
+            <Text style={{ marginTop: 8, color: text }}>Loading forecast…</Text>
+          </View>
+        )}
 
-      {data && !loading && (
-        <View style={{ gap: 14 }}>
-          <TodayCard data={data} theme={isDark ? "dark" : "light"} />
-          <WeekForecastList data={data} theme={isDark ? "dark" : "light"} />
-        </View>
-      )}
-    </ScrollView>
+        {err && <Text style={[styles.error, { color: "#ff5a5f" }]}>⚠️ {err}</Text>}
+
+        {data && !loading && (
+          <View style={{ gap: 14 }}>
+            <TodayCard data={data} theme={isDark ? "dark" : "light"} />
+            <WeekForecastList data={data} theme={isDark ? "dark" : "light"} />
+          </View>
+        )}
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
