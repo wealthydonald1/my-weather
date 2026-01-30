@@ -28,7 +28,6 @@ const MAX_RECENT = 5;
 export default function WeatherScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
-
   const text = isDark ? "#fff" : "#111";
 
   const [query, setQuery] = useState("Lagos");
@@ -36,6 +35,7 @@ export default function WeatherScreen() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   async function loadRecent() {
     const raw = await AsyncStorage.getItem(RECENT_KEY);
@@ -66,6 +66,7 @@ export default function WeatherScreen() {
       });
       setData(w);
       saveRecent(w.cityLabel);
+      setLastUpdated(new Date());
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
       setData(null);
@@ -87,7 +88,26 @@ export default function WeatherScreen() {
   return (
     <LinearGradient colors={gradient} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.page}>
-        <Text style={[styles.h1, { color: text }]}>Weather</Text>
+        <View style={styles.headerRow}>
+  <View style={{ flex: 1 }}>
+    <Text style={[styles.h1, { color: text }]}>Weather</Text>
+    <Text style={{ marginTop: 2, color: isDark ? "#bdbdbd" : "#555" }}>
+      {lastUpdated
+        ? `Last updated: ${lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+        : "Last updated: —"}
+    </Text>
+  </View>
+
+  <Text
+    onPress={() => loadCity(query)}
+    style={[
+      styles.refresh,
+      { color: isDark ? "#fff" : "#111", borderColor: isDark ? "#222" : "#ddd" },
+    ]}
+  >
+    Refresh
+  </Text>
+</View>
 
         <SearchBar
           value={query}
@@ -157,5 +177,13 @@ loadingCard: {
   shadowRadius: 10,
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
+},
+headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+refresh: {
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 999,
+  borderWidth: 1,
+  fontWeight: "900",
 },
 });
